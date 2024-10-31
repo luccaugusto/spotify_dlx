@@ -30,9 +30,9 @@ def _login(client: SpotifyDLXClient) -> None:
     # Login with env vars.
     elif "SPOTIFY_USERNAME" in os.environ.keys() and "SPOTIFY_PASSWORD" in os.environ.keys():
         print("Credentials are loaded from env vars:sparkles:")
-        username = os.getenv("SPOTIFY_USERNAME")
-        password = os.getenv("SPOTIFY_PASSWORD")
-        client.login(usename=username, password=password)
+        username = os.getenv("SPOTIFY_USERNAME", "")
+        password = os.getenv("SPOTIFY_PASSWORD", "")
+        client.login(username=username, password=password)
 
     # Ask user to type username and password.
     else:
@@ -44,8 +44,8 @@ def _login(client: SpotifyDLXClient) -> None:
 
 def _main():
     parser = ArgumentParser()
-    parser.add_argument("--root", default="~/spotify_dlx/songs/")
-    parser.add_argument("--root-podcast", default="~/spotify_dlx/podcasts/")
+    parser.add_argument("--root", default=f"{os.environ.get("HOME")}/spotify_dlx/songs/")
+    parser.add_argument("--root-podcast", default=f"{os.environ.get("HOME")}/spotify_dlx/podcasts/")
     parser.add_argument("--url")
     parser.add_argument("--disable-skip", default=False, action="store_true")
     parser.add_argument("--liked", default=False, action="store_true")
@@ -90,10 +90,13 @@ def _main():
         client.download_from_url(args.url)
 
     else:
-        print(":mag_right:", end="")
-        search_query = input("Enter search: ")
-        print()
-        client.search(search_query, args.limit)
+        while True:
+            print("[\\q to quit]")
+            search_query = input("Enter search: ")
+            if search_query == "\\q":
+                break
+            print()
+            client.search(search_query, args.limit)
 
 
 if __name__ == "__main__":

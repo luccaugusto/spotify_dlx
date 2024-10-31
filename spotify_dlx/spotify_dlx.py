@@ -16,7 +16,7 @@ from librespot.metadata import EpisodeId, TrackId
 from rich import print
 from yaspin import yaspin
 
-from spotify_dlx.utils import (
+from utils import (
     convert_audio_format,
     sanitize_data,
     set_audio_tags,
@@ -521,31 +521,36 @@ class SpotifyDLXClient(object):
             )
         print("")
 
-        index = int(input("Select by ID: "))
-        print("")
+        print("[use a comma to space multiple values]")
+        index = input("Select by ID: ")
+        for index in index.split(","):
+            index = int(index)
+            print("")
 
-        # Downloading single track.
-        if index <= len(tracks):
-            track_id = tracks[index - 1]["id"]
-            self.download_track(track_id)
+            # Downloading single track.
+            if index <= len(tracks):
+                track_id = tracks[index - 1]["id"]
+                self.download_track(track_id)
 
-        # Downloading album.
-        elif index <= len(albums) + len(tracks):
-            print(f'[bold green]>>> Downloading Album: {albums[index - len(tracks) - 1]["name"]} >>>[/bold green]\n')
-            self.download_album(albums[index - len(tracks) - 1]["id"])
+            # Downloading album.
+            elif index <= len(albums) + len(tracks):
+                print(
+                    f'[bold green]>>> Downloading Album: {albums[index - len(tracks) - 1]["name"]} >>>[/bold green]\n'
+                )
+                self.download_album(albums[index - len(tracks) - 1]["id"])
 
-        # Downloading playlist.
-        else:
-            playlist = playlists[index - len(tracks) - len(albums) - 1]
-            print(f'[bold green]>>> Downloading Playlist: {playlist["name"]} >>>[/bold green]\n')
-            playlist_songs = self._fetch_items(f"https://api.spotify.com/v1/playlists/{playlist['id']}/tracks")
-            for song in playlist_songs:
-                if song["track"] and song["track"]["id"] is not None:
-                    self.download_track(
-                        song["track"]["id"],
-                        sanitize_data(playlist["name"].strip()) + "/",
-                    )
-                    print("")
+            # Downloading playlist.
+            else:
+                playlist = playlists[index - len(tracks) - len(albums) - 1]
+                print(f'[bold green]>>> Downloading Playlist: {playlist["name"]} >>>[/bold green]\n')
+                playlist_songs = self._fetch_items(f"https://api.spotify.com/v1/playlists/{playlist['id']}/tracks")
+                for song in playlist_songs:
+                    if song["track"] and song["track"]["id"] is not None:
+                        self.download_track(
+                            song["track"]["id"],
+                            sanitize_data(playlist["name"].strip()) + "/",
+                        )
+                        print("")
 
     def _fetch_search_info(self, search_query: str, limit: int = 10) -> Tuple[List]:
         res = requests.get(

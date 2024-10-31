@@ -8,3 +8,6 @@ lint: # Lint all files in this repository
 
 test: # Run tests
 	pytest tests
+
+run:
+	python spotify_dlx/__main__.py
